@@ -11,6 +11,9 @@ final class CollectionMovieCell: UICollectionViewCell {
     @IBOutlet var posterImage: UIImageView!
     @IBOutlet var ratingLabel: UILabel!
     
+    private let networkManager = NetworkManager.shared
+    var movieID: Int?
+    
     override func awakeFromNib() {
         super.awakeFromNib()
         layer.cornerRadius = 10
@@ -19,5 +22,29 @@ final class CollectionMovieCell: UICollectionViewCell {
     override func prepareForReuse() {
         super.prepareForReuse()
         posterImage.image = nil
+        ratingLabel.text = nil
+        movieID = nil
+    }
+    
+    func configureUI(with movie: Movie) {
+        movieID = movie.id // сохраняем ID
+        posterImage.image = UIImage(named: "placeholder") // очистка при переиспользовании
+        ratingLabel.text = "★ " + String(format: "%.1f", movie.voteAverage)
+        
+        if let url = movie.posterURL {
+            networkManager.fetchImage(from: url) { [weak self] result in
+                DispatchQueue.main.async {
+                    guard let self = self else { return }
+                    if self.movieID == movie.id { // проверка соответствия
+                        switch result {
+                        case .success(let imageData):
+                            self.posterImage.image = UIImage(data: imageData)
+                        case .failure(let error):
+                            print("Ошибка загрузки изображения: \(error)")
+                        }
+                    }
+                }
+            }
+        }
     }
 }

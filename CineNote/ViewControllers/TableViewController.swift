@@ -17,7 +17,7 @@ final class TableViewController: UITableViewController {
         super.viewDidLoad()
         
         loadAllCategories()
-        loadGenres()
+        //loadGenres()
     }
     
     private func loadAllCategories() {

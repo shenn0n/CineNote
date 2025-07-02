@@ -11,7 +11,6 @@ final class TableMovieCell: UITableViewCell {
     @IBOutlet var categoryTitleLabel: UILabel!
     @IBOutlet var collectionMovieView: UICollectionView!
     
-    private let networkManager = NetworkManager.shared
     var movies: [Movie] = []
     
     override func awakeFromNib() {
@@ -53,24 +52,7 @@ extension TableMovieCell: UICollectionViewDelegate, UICollectionViewDataSource {
             guard let cell = cell as? CollectionMovieCell else { return UICollectionViewCell() }
             
             let movie = movies[indexPath.item]
-            cell.posterImage.image = UIImage(named: "placeholder") // очистка при переиспользовании
-            cell.ratingLabel.text = "★ " + String(format: "%.1f", movie.voteAverage)
-            
-            if let url = movie.posterURL {
-                networkManager.fetchImage(from: url) { result in
-                    DispatchQueue.main.async {
-                        switch result {
-                        case .success(let imageData):
-                            // проверяем, не переиспользована ли ячейка
-                            if let currentIndex = collectionView.indexPath(for: cell), currentIndex == indexPath {
-                                cell.posterImage.image = UIImage(data: imageData)
-                            }
-                        case .failure(let error):
-                            print("Ошибка загрузки изображения: \(error)")
-                        }
-                    }
-                }
-            }
+            cell.configureUI(with: movie)
             return cell
         }
     }

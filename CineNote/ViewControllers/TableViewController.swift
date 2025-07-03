@@ -17,7 +17,7 @@ final class TableViewController: UITableViewController {
         super.viewDidLoad()
         
         loadAllCategories()
-        //loadGenres()
+        loadGenres()
     }
     
     private func loadAllCategories() {
@@ -36,14 +36,12 @@ final class TableViewController: UITableViewController {
     
     private func loadGenres() {
         networkManager.fetchGenres { [weak self] result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success(let genres):
-                    self?.genres = genres
-                    self?.tableView.reloadData()
-                case .failure(let error):
-                    print("Error: \(error)")
-                }
+            switch result {
+            case .success(let genres):
+                self?.genres = genres
+                self?.tableView.reloadData()
+            case .failure(let error):
+                print("Error: \(error)")
             }
         }
     }
@@ -69,6 +67,7 @@ extension TableViewController {
             
             cell.categoryTitleLabel.text = category.title
             cell.movies = movies
+            cell.delegate = self
 
             cell.collectionMovieView.setContentOffset(.zero, animated: false) // сброс позиции при переиспользовании
             cell.collectionMovieView.reloadData()
@@ -81,6 +80,17 @@ extension TableViewController {
             cell.collectionGenreView.reloadData()
             return cell
         }
+    }
+}
+
+extension TableViewController: TableMovieCellDelegate {
+    func tableMovieCell(didSelectMovie movie: Movie) {
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        guard let detailsVC = storyboard.instantiateViewController(withIdentifier: "MovieDetailsViewController") as? MovieDetailsViewController else {
+            return
+        }
+        detailsVC.setMovie(movie)
+        navigationController?.pushViewController(detailsVC, animated: true)
     }
 }
 

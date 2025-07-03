@@ -20,51 +20,57 @@ final class NetworkManager {
     private init() {}
 
     func fetchMovies(for category: MovieCategory, completion: @escaping (Result<(MovieCategory, [Movie]), NetworkError>) -> Void) {
-        let urlString = "\(Constants.baseURL)\(category.endpoint)?api_key=\(Constants.apiKey)&language=ru-RU"
+        let urlString = "\(Constants.baseURL)\(category.endpoint)?api_key=\(Constants.apiKey)&language=\(Constants.language)"
         
-        guard let url = URL(string: urlString) else {
-            completion(.failure(.invalidURL))
-            return
+        performRequest(urlString: urlString) { (result: Result<MovieResponse, NetworkError>) in
+            switch result {
+            case .success(let response):
+                completion(.success((category, response.results)))
+            case .failure(let error):
+                completion(.failure(error))
+            }
         }
-        
-        URLSession.shared.dataTask(with: url) { data, _, error in
-            guard let data else {
-                completion(.failure(.noData))
-                print(error?.localizedDescription ?? "No error description")
-                return
-            }
-            
-            do {
-                let dataModel = try JSONDecoder().decode(MovieResponse.self, from: data)
-                DispatchQueue.main.async {
-                    completion(.success((category, dataModel.results)))
-                }
-            } catch {
-                completion(.failure(.decodingError))
-            }
-        }.resume()
     }
     
-    func fetchGenres(completion: @escaping (Result<[Genre], Error>) -> Void) {
-        let urlString = "https://api.themoviedb.org/3/genre/movie/list?api_key=43f1427a3e06ef8db06790fe1edb2473&language=ru"
+    func fetchGenres(completion: @escaping (Result<[Genre], NetworkError>) -> Void) {
+        let urlString = "\(Constants.baseURL)/genre/movie/list?api_key=\(Constants.apiKey)&language=\(Constants.language)"
         
-        guard let url = URL(string: urlString) else { return }
-        
-        URLSession.shared.dataTask(with: url) { data, _, error in
-            if let error = error {
-                completion(.failure(error))
-                return
-            }
-            
-            guard let data = data else { return }
-            
-            do {
-                let response = try JSONDecoder().decode(GenreResponse.self, from: data)
+        performRequest(urlString: urlString) { (result: Result<GenreResponse, NetworkError>) in
+            switch result {
+            case .success(let response):
                 completion(.success(response.genres))
-            } catch {
+            case .failure(let error):
                 completion(.failure(error))
             }
-        }.resume()
+        }
+    }
+    
+    
+    func searchMovies(query: String, completion: @escaping (Result<[Movie], NetworkError>) -> Void) {
+        let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+        let urlString = "\(Constants.baseURL)/search/movie?api_key=\(Constants.apiKey)&query=\(encodedQuery)&language=\(Constants.language)"
+        
+        performRequest(urlString: urlString) { (result: Result<MovieSearchResponse, NetworkError>) in
+            switch result {
+            case .success(let response):
+                completion(.success(response.results))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+    
+    func fetchTrendingMovies(completion: @escaping (Result<[Movie], NetworkError>) -> Void) {
+        let urlString = "\(Constants.baseURL)/trending/movie/day?api_key=\(Constants.apiKey)&language=\(Constants.language)"
+        
+        performRequest(urlString: urlString) { (result: Result<MovieSearchResponse, NetworkError>) in
+            switch result {
+            case .success(let response):
+                completion(.success(response.results))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
     }
     
     func fetchImage(from url: URL, completion: @escaping(Result<Data, NetworkError>) -> Void) {
@@ -77,5 +83,27 @@ final class NetworkManager {
                 completion(.success(imageData))
             }
         }
+    }
+    
+    private func performRequest<T: Decodable>(urlString: String, completion: @escaping (Result<T, NetworkError>) -> Void) {
+        guard let url = URL(string: urlString) else {
+            completion(.failure(.invalidURL))
+            return
+        }
+        URLSession.shared.dataTask(with: url) { data, _, error in
+            guard let data else {
+                completion(.failure(.noData))
+                print(error?.localizedDescription ?? "No error description")
+                return
+            }
+            do {
+                let decodedObject = try JSONDecoder().decode(T.self, from: data)
+                DispatchQueue.main.async {
+                    completion(.success(decodedObject))
+                }
+            } catch {
+                completion(.failure(.decodingError))
+            }
+        }.resume()
     }
 }

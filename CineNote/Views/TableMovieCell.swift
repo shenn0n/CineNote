@@ -7,11 +7,17 @@
 
 import UIKit
 
+protocol TableMovieCellDelegate: AnyObject {
+    func tableMovieCell(didSelectMovie movie: Movie)
+}
+
+
 final class TableMovieCell: UITableViewCell {
     @IBOutlet var categoryTitleLabel: UILabel!
     @IBOutlet var collectionMovieView: UICollectionView!
     
     var movies: [Movie] = []
+    weak var delegate: TableMovieCellDelegate?
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -33,6 +39,12 @@ final class TableMovieCell: UITableViewCell {
             bottomColor: UIColor(named: "bottom") ?? .clear
         )
         contentView.updateGradientFrame()
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        guard indexPath.item < movies.count else { return } // игнор пагинации
+        let selectedMovie = movies[indexPath.item]
+        delegate?.tableMovieCell(didSelectMovie: selectedMovie)
     }
 }
 

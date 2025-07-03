@@ -33,15 +33,13 @@ final class CollectionMovieCell: UICollectionViewCell {
         
         if let url = movie.posterURL {
             networkManager.fetchImage(from: url) { [weak self] result in
-                DispatchQueue.main.async {
-                    guard let self = self else { return }
-                    if self.movieID == movie.id { // проверка соответствия
-                        switch result {
-                        case .success(let imageData):
-                            self.posterImage.image = UIImage(data: imageData)
-                        case .failure(let error):
-                            print("Ошибка загрузки изображения: \(error)")
-                        }
+                guard let self else { return }
+                if self.movieID == movie.id { // проверка соответствия
+                    switch result {
+                    case .success(let imageData):
+                        self.posterImage.image = UIImage(data: imageData)
+                    case .failure(let error):
+                        print("Ошибка загрузки изображения: \(error)")
                     }
                 }
             }

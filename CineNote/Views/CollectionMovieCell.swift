@@ -11,8 +11,8 @@ final class CollectionMovieCell: UICollectionViewCell {
     @IBOutlet var posterImage: UIImageView!
     @IBOutlet var ratingLabel: UILabel!
     
-    private let networkManager = NetworkManager.shared
     var movieID: Int?
+    private let networkManager = NetworkManager.shared
     
     override func awakeFromNib() {
         super.awakeFromNib()

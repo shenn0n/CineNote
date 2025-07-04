@@ -78,6 +78,19 @@ extension TableViewController {
             
             cell.genres = genres
             cell.collectionGenreView.reloadData()
+            
+            // Реакция на выбор жанра
+            cell.onGenreSelected = { [weak self] genre in
+                guard let self = self else { return }
+                // Создаём MovieCollectionViewController из Storyboard
+                let storyboard = UIStoryboard(name: "Main", bundle: nil)
+                if let movieCollectionVC = storyboard.instantiateViewController(withIdentifier: "MovieCollectionViewController") as? MovieCollectionViewController {
+                    movieCollectionVC.genreId = genre.id
+                    movieCollectionVC.genryTitle = genre.name
+                    movieCollectionVC.delegate = self
+                    self.navigationController?.pushViewController(movieCollectionVC, animated: true)
+                }
+            }
             return cell
         }
     }

@@ -73,6 +73,19 @@ final class NetworkManager {
         }
     }
     
+    func fetchMoviesByGenre(genreId: Int, completion: @escaping (Result<[Movie], NetworkError>) -> Void) {
+        let urlString = "\(Constants.baseURL)/discover/movie?api_key=\(Constants.apiKey)&language=\(Constants.language)&with_genres=\(genreId)"
+        
+        performRequest(urlString: urlString) { (result: Result<MovieResponse, NetworkError>) in
+            switch result {
+            case .success(let response):
+                completion(.success(response.results))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+    
     func fetchImage(from url: URL, completion: @escaping(Result<Data, NetworkError>) -> Void) {
         DispatchQueue.global().async {
             guard let imageData = try? Data(contentsOf: url) else {

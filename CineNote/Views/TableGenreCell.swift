@@ -10,6 +10,7 @@ import UIKit
 final class TableGenreCell: UITableViewCell {
     @IBOutlet var collectionGenreView: UICollectionView!
     var genres: [Genre] = []
+    var onGenreSelected: ((Genre) -> Void)?
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -21,7 +22,7 @@ final class TableGenreCell: UITableViewCell {
 
 extension TableGenreCell: UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return genres.count
+        genres.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -30,6 +31,11 @@ extension TableGenreCell: UICollectionViewDataSource, UICollectionViewDelegateFl
             cell.genreTitleLabel.text = genres[indexPath.item].name.uppercased()
         }
         return cell
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let selectedGenre = genres[indexPath.item]
+        onGenreSelected?(selectedGenre)
     }
     
     func collectionView(_ collectionView: UICollectionView,

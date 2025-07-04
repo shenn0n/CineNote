@@ -8,7 +8,7 @@
 import UIKit
 
 final class MovieDetailsViewController: UIViewController {
-    @IBOutlet var posterImageView: UIImageView!
+    @IBOutlet var posterImage: UIImageView!
     @IBOutlet var titleLabel: UILabel!
     @IBOutlet var originalTitleLabel: UILabel!
     @IBOutlet var releaseDateLabel: UILabel!
@@ -44,7 +44,7 @@ final class MovieDetailsViewController: UIViewController {
                 guard let self else { return }
                 switch result {
                 case .success(let imageData):
-                    self.posterImageView.image = UIImage(data: imageData)
+                    self.posterImage.image = UIImage(data: imageData)
                 case .failure(let error):
                     print("Ошибка загрузки постера: \(error)")
                 }
